@@ -17,8 +17,9 @@ Device Tree For Samsung Galaxy Ace 3 LTE
 
 ![Galaxy Ace 3 LTE](http://www.sammobile.com/wp-content/uploads/2013/06/GALAXY-Ace-3-LTE-1.jpg "Galaxy Ace 3 LTE")
 
-This branch is for building CyanogenMod 12.1 Firmware.
+This branch is for building LineageOS 14.1 Firmware.
 
-Copyright 2014 - The CyanogenMod Project
+Copyright (C  2013-2016, The CyanogenMod Project
+Copyright (C) 2017, The LineageOS Project
 
 WORK IN PROGRESS. WILL EAT YOUR CAT.
