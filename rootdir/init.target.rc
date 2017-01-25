@@ -34,13 +34,23 @@ on early-init
     chown system system /sys/kernel/debug/kgsl/proc
     mkdir /efs 0771 system radio
     chmod 644 /proc/cmdline
+    write /sys/devices/virtual/graphics/fb0/rgb "32768 32768 32768"
 
-    # Increase read_ahead
-    write /sys/block/mmcblk0/bdi/read_ahead_kb 512
-    write /sys/block/mmcblk1/bdi/read_ahead_kb 512
+    # Flash storage isn't a good entropy source, and only causes
+    # locking overhead in the kernel. Turn it off.
+    write /sys/block/mmcblk0/queue/add_random 0
+    write /sys/block/mmcblk1/queue/add_random 0
 
-    # disable swap page clustering -- recommended in https://source.android.com/devices/low-ram.html
+    # KSM
+    write /sys/kernel/mm/ksm/deferred_timer 1
+    write /sys/kernel/mm/ksm/pages_to_scan 100
+    write /sys/kernel/mm/ksm/sleep_millisecs 500
+    write /sys/kernel/mm/ksm/run 1
+
+    # Swapping 1 page at a time is ok
     write /proc/sys/vm/page-cluster 0
+
+    write /proc/sys/vm/swappiness 100
 
 on fs
     write /sys/block/zram0/comp_algorithm lz4
@@ -56,15 +66,12 @@ on fs
     chown system radio /dev/block/platform/msm_sdcc.1/by-name
     chmod 0775 /dev/block/platform/msm_sdcc.1/by-name
 
-    setprop ro.crypto.fuse_sdcard true
-
 on boot
     write /sys/devices/i2c-3/3-0024/cyttsp_update_fw 1
     write /sys/devices/i2c-3/3-005b/update_fw 1
     start qcamerasvr
 
 on post-fs-data
-    mkdir /data/tombstones 0771 system system
     mkdir /tombstones/modem 0771 system system
     mkdir /tombstones/lpass 0771 system system
     mkdir /tombstones/wcnss 0771 system system
@@ -98,6 +105,8 @@ on post-fs-data
     # Sensors
     write /sys/class/input/input4/distortion "400 50 15"
     write /sys/class/input/input5/distortion "400 50 15"
+    write /sys/class/input/input6/distortion "400 50 15"
+    write /sys/class/input/input7/distortion "400 50 15"
 
     # Sensor - soft iron
     write /sys/class/input/input4/static_matrix "9665 -302 -5 -268 10196 146 83 645 10159"
@@ -118,6 +127,16 @@ on post-fs-data
     chown system input /sys/class/input/input3/gyro_enable
     chown system input /sys/class/input/input3/gyro_delay
     chown system input /sys/class/input/input3/self_test
+    chown system input /sys/class/input/input4/acc_enable
+    chown system input /sys/class/input/input4/acc_delay
+    chown system input /sys/class/input/input4/gyro_enable
+    chown system input /sys/class/input/input4/gyro_delay
+    chown system input /sys/class/input/input4/self_test
+    chown system input /sys/class/input/input5/acc_enable
+    chown system input /sys/class/input/input5/acc_delay
+    chown system input /sys/class/input/input5/gyro_enable
+    chown system input /sys/class/input/input5/gyro_delay
+    chown system input /sys/class/input/input5/self_test
 
     # geomagnetic
     chown system input /sys/class/input/input3/enable
@@ -136,6 +155,22 @@ on post-fs-data
     chown system input /sys/class/input/input4/status
     chown system input /sys/class/input/input4/wake
     chown system input /sys/class/input/input4/position
+    chown system input /sys/class/input/input5/enable
+    chown system input /sys/class/input/input5/delay
+    chown system input /sys/class/input/input5/filter_enable
+    chown system input /sys/class/input/input5/filter_len
+    chown system input /sys/class/input/input5/data
+    chown system input /sys/class/input/input5/status
+    chown system input /sys/class/input/input5/wake
+    chown system input /sys/class/input/input5/position
+    chown system input /sys/class/input/input6/enable
+    chown system input /sys/class/input/input6/delay
+    chown system input /sys/class/input/input6/filter_enable
+    chown system input /sys/class/input/input6/filter_len
+    chown system input /sys/class/input/input6/data
+    chown system input /sys/class/input/input6/status
+    chown system input /sys/class/input/input6/wake
+    chown system input /sys/class/input/input6/position
 
     # geomagnetic_raw
     chown compass input /sys/class/input/input4/offsets
@@ -144,16 +179,43 @@ on post-fs-data
     chown system input /sys/class/input/input4/distortion
     chown system input /sys/class/input/input4/shape
     chown system input /sys/class/input/input4/self_test
+    chown compass input /sys/class/input/input5/offsets
+    chown compass input /sys/class/input/input5/dynamic_matrix
+    chown system input /sys/class/input/input5/threshold
+    chown system input /sys/class/input/input5/distortion
+    chown system input /sys/class/input/input5/shape
+    chown system input /sys/class/input/input5/self_test
+    chown compass input /sys/class/input/input6/offsets
+    chown compass input /sys/class/input/input6/dynamic_matrix
+    chown system input /sys/class/input/input6/threshold
+    chown system input /sys/class/input/input6/distortion
+    chown system input /sys/class/input/input6/shape
+    chown compass input /sys/class/input/input7/offsets
+    chown compass input /sys/class/input/input7/dynamic_matrix
+    chown system input /sys/class/input/input7/threshold
+    chown system input /sys/class/input/input7/distortion
+    chown system input /sys/class/input/input7/shape
+    chown compass input /sys/class/input/input8/offsets
+    chown compass input /sys/class/input/input8/dynamic_matrix
+    chown system input /sys/class/input/input8/threshold
+    chown system input /sys/class/input/input8/distortion
+    chown system input /sys/class/input/input8/shape
 
     # proximity_sensor
     chown system input /sys/class/input/input5/enable
     chown system input /sys/class/input/input6/enable
+    chown system input /sys/class/input/input7/enable
+    chown system input /sys/class/input/input8/enable
 
     # light_sensor
     chown system input /sys/class/input/input6/enable
     chown system input /sys/class/input/input6/poll_delay
     chown system input /sys/class/input/input7/enable
     chown system input /sys/class/input/input7/poll_delay
+    chown system input /sys/class/input/input8/enable
+    chown system input /sys/class/input/input8/poll_delay
+    chown system input /sys/class/input/input9/enable
+    chown system input /sys/class/input/input9/poll_delay
 
     # Accelerometer_sensor
     chown system radio /sys/class/sensors/accelerometer_sensor/raw_data
@@ -408,22 +470,28 @@ on post-fs-data
 service qcamerasvr /system/bin/mm-qcamera-daemon
     class late_start
     user camera
-    group camera system inet input graphics net_bt_stack
+    group camera system inet input graphics
 
 service thermald /system/bin/thermald
     class main
     user root
     group root
 
-#service mpdecision /system/bin/mpdecision --avg_comp
-    #class main
-    #user root
-    #disabled
+service mpdecision /system/bin/mpdecision --avg_comp
+    class main
+    user root
+    group root system readproc
+    disabled
 
 service qseecomd /system/bin/qseecomd
-    class late_start
+    class core
     user system
     group system
+
+service charger /sbin/healthd -c
+    class charger
+    critical
+    seclabel u:r:healthd:s0
 
 service geomagneticd /system/bin/geomagneticd
     class late_start
@@ -436,18 +504,10 @@ service time_daemon /system/bin/time_daemon
     group root
 
 service wcnss-service /system/bin/wcnss_service
-    class late_start
-    user system
-    group system wifi
-    oneshot
-
-# bugreport is triggered by holding down volume down, volume up and power
-service bugreport /system/bin/dumpstate -d -p -B \
-        -o /data/data/com.android.shell/files/bugreports/bugreport
     class main
-    disabled
+    user system
+    group system wifi radio
     oneshot
-    keycodes 114 115 116
 
 # insthk
 service insthk /system/bin/insthk
